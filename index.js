@@ -183,7 +183,9 @@ class CJKSpace {
             let currType = element.type;
             // easy for undifiend type to boolean, by implicit conversion
             if (!currType) {
-                ast[index] = this.ProcessCJKSpace(element)
+                if (currType != "codespan") {
+                    ast[index] = this.ProcessCJKSpace(element);
+                }
             } else {
                 this.walk(element)
             }
@@ -215,7 +217,7 @@ class CJKSpace {
                 ast.body.forEach(b => WalkTable(b));
                 break;
 
-            case (type !== "code" && type !== "hr" && type !== 'codespan'):
+            case (type !== "code" && type !== "hr"):
                 this.WalkArray(ast.text);
                 break;
         }
