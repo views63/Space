@@ -1,0 +1,15 @@
+{
+  "name": "space",
+  "version": "1.0.0",
+  "description": "Process CJK Space",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "marked-ast": "^0.3.0",
+    "marked-ast-markdown": "^2.0.1"
+  }
+}
