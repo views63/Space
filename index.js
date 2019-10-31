@@ -9,13 +9,13 @@ const CharCatalog = {
     Others: 3
 }
 
+/** chinese special character */
 const CJK = "\u2e80-\u2eff\u2f00-\u2fdf\u3040-\u309f\u30a0-\u30fa\u30fc-\u30ff\u3100-\u312f\u3200-\u32ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff";
 
-CJK_SYMBOLS = /[，。、？“”‘’：；【】（）￥！~·]/;
+/** chinese symbols */
+const SYMBOLS = /[，。、？“”‘’：；【】（）￥！~·]/;
 
-
-const ANY_CJK = new RegExp(`[${CJK}]`);
-
+/** matching the spaces in HTML tags */
 const HTML_STRING = /<\S.+?>/
 
 class CJKSpace {
@@ -23,18 +23,20 @@ class CJKSpace {
         this.version = '1.0.0';
     }
 
+    /**
+     * @method Using RegExp parse the type of string
+     * @return {number} of space
+     */
     GetCharCatalog(str) {
-        if (str == " ") {
+        if (str === " ") {
             return CharCatalog.Space;
         }
 
-        let t = str.match(CJK_SYMBOLS);
-        if (t != null) {
+        if (str.match(SYMBOLS) !== null) {
             return CharCatalog.CJK_SYMBOLS;
         }
 
-        t = str.match(ANY_CJK);
-        if (t != null) {
+        if (str.match(new RegExp(`[${CJK}]`)) !== null) {
             return CharCatalog.CJK;
         }
 
@@ -60,28 +62,28 @@ class CJKSpace {
             const next = data[index + 1];
             const nextCatalog = this.GetCharCatalog(next);
 
-            if (currCatalog == CharCatalog.Space && nextCatalog == CharCatalog.Space) {
+            if (currCatalog === CharCatalog.Space && nextCatalog === CharCatalog.Space) {
                 continue;
             }
 
-            if (currCatalog == CharCatalog.Others && nextCatalog == CharCatalog.CJK) {
+            if (currCatalog === CharCatalog.Others && nextCatalog === CharCatalog.CJK) {
                 newText += curr + " ";
                 currCatalog = nextCatalog;
                 continue;
             }
 
-            if (currCatalog == CharCatalog.CJK && nextCatalog == CharCatalog.Others) {
+            if (currCatalog === CharCatalog.CJK && nextCatalog === CharCatalog.Others) {
                 newText += curr + " ";
                 currCatalog = nextCatalog;
                 continue;
             }
 
-            if (currCatalog == CharCatalog.Space && nextCatalog == CharCatalog.CJK_SYMBOLS) {
+            if (currCatalog === CharCatalog.Space && nextCatalog === CharCatalog.CJK_SYMBOLS) {
                 currCatalog = nextCatalog;
                 continue;
             }
 
-            if (currCatalog == CharCatalog.CJK_SYMBOLS && nextCatalog == CharCatalog.Space) {
+            if (currCatalog === CharCatalog.CJK_SYMBOLS && nextCatalog === CharCatalog.Space) {
                 newText += curr;
                 index += 1;
                 continue;
@@ -96,26 +98,26 @@ class CJKSpace {
         currCatalog = this.GetCharCatalog(tail);
         tail = data[data.length - 1]
 
-        if (currCatalog == CharCatalog.Space && tailCatalog == CharCatalog.Space) {
+        if (currCatalog === CharCatalog.Space && tailCatalog === CharCatalog.Space) {
             return newText;
         }
 
-        if (currCatalog == CharCatalog.Others && tailCatalog == CharCatalog.CJK) {
+        if (currCatalog === CharCatalog.Others && tailCatalog === CharCatalog.CJK) {
             newText += " " + tail;
             return newText;
         }
 
-        if (currCatalog == CharCatalog.CJK && tailCatalog == CharCatalog.Others) {
+        if (currCatalog === CharCatalog.CJK && tailCatalog === CharCatalog.Others) {
             newText += " " + tail;
             return newText;
         }
 
-        if (currCatalog == CharCatalog.Space && tailCatalog == CharCatalog.CJK_SYMBOLS) {
+        if (currCatalog === CharCatalog.Space && tailCatalog === CharCatalog.CJK_SYMBOLS) {
             newText = newText.substr(0, newText.length - 1) + tail;
             return newText;
         }
 
-        if (currCatalog == CharCatalog.CJK_SYMBOLS && tailCatalog == CharCatalog.Space) {
+        if (currCatalog === CharCatalog.CJK_SYMBOLS && tailCatalog === CharCatalog.Space) {
             return newText;
         }
 
@@ -130,7 +132,7 @@ class CJKSpace {
         for (let index = 0; index < table.content.length; index++) {
             const element = table.content[index];
             let tt = typeof (element)
-            if (tt == "string") {
+            if (tt === "string") {
                 table.content[index] = this.ProcessCJKSpace(element)
             } else {
                 this.WalkTable(element)
@@ -146,11 +148,11 @@ class CJKSpace {
             const currHead = curr[0];
             const currCatalog = this.GetCharCatalog(currHead);
             const preCatalog = this.GetCharCatalog(preTail);
-            if (preCatalog == CharCatalog.Others && currCatalog == CharCatalog.CJK) {
+            if (preCatalog === CharCatalog.Others && currCatalog === CharCatalog.CJK) {
                 ast[index - 1] = preElement + " ";
             }
 
-            if (preCatalog == CharCatalog.CJK && currCatalog == CharCatalog.Others) {
+            if (preCatalog === CharCatalog.CJK && currCatalog === CharCatalog.Others) {
                 ast[index - 1] = preElement + " ";
             }
         }
@@ -164,11 +166,11 @@ class CJKSpace {
             const currHead = curr[0];
             const currCatalog = this.GetCharCatalog(currHead);
             const preCatalog = this.GetCharCatalog(preTail);
-            if (preCatalog == CharCatalog.Others && currCatalog == CharCatalog.CJK) {
+            if (preCatalog === CharCatalog.Others && currCatalog === CharCatalog.CJK) {
                 ast[index] = " " + curr;
             }
 
-            if (preCatalog == CharCatalog.CJK && currCatalog == CharCatalog.Others) {
+            if (preCatalog === CharCatalog.CJK && currCatalog === CharCatalog.Others) {
                 ast[index] = " " + curr;
             }
         }
@@ -179,17 +181,18 @@ class CJKSpace {
         for (let index = 0; index < ast.length; index++) {
             const element = ast[index];
             let currType = element.type;
-            if (currType == undefined) {
+            // easy for undifiend type to boolean, by implicit conversion
+            if (!currType) {
                 ast[index] = this.ProcessCJKSpace(element)
             } else {
                 this.walk(element)
             }
 
-            if (index>0 && preType == undefined && (currType == "codespan" || currType == "strong" || currType == "em")) {
+            if (index > 0 && !preType && (currType === "codespan" || currType === "strong" || currType === "em")) {
                 this.ProcessNodeLeftCJKSpace(ast, index);
             }
 
-            if (currType == undefined && (preType == "codespan" || preType == "strong" || preType == "em")) {
+            if (!currType && (preType === "codespan" || preType === "strong" || preType === "em")) {
                 this.ProcessNodeRightCJKSpace(ast, index);
             }
             preType = currType;
@@ -197,51 +200,37 @@ class CJKSpace {
     }
 
     walk(ast) {
-        let t = ast.type;
-        if (t == "list") {
-            this.WalkArray(ast.body);
-            return;
+        const type = ast.type;
+        switch (type) {
+            case 'list':
+                this.WalkArray(ast.body);
+                break;
+
+            case 'blockquote':
+                this.WalkArray(ast.quote);
+                break;
+
+            case 'table':
+                ast.header.forEach(h => WalkTable(h));
+                ast.body.forEach(b => WalkTable(b));
+                break;
+
+            case (type !== "code" && type !== "hr"):
+                this.WalkArray(ast.text);
+                break;
         }
 
-        if (t == "blockquote") {
-            this.WalkArray(ast.quote);
-            return;
-        }
-
-        if (t == "table") {
-            for (let index = 0; index < ast.header.length; index++) {
-                this.WalkTable(ast.header[index])
-
-            }
-            for (let index = 0; index < ast.body.length; index++) {
-                this.WalkTable(ast.body[index])
-            }
-            return;
-        }
-
-        const textType = typeof(ast.text);
-        if (textType == "string") {
+        const textType = typeof (ast.text);
+        if (textType === "string") {
             ast.text = this.ProcessCJKSpace(ast.text);
             return;
-        }
-
-
-        if (t != "code" && t != "hr") {
-            try {
-                this.WalkArray(ast.text);
-            } catch (error) {
-                console.log(error)
-            }
         }
     }
 
     MarkdownCJKSpace(md) {
         const ast = marked.parse(md);
-        for (let index = 0; index < ast.length; index++) {
-            const element = ast[index];
-            this.walk(element);
-        }
-
+        console.log(`ast`, ast);
+        ast.forEach(_ast => this.walk(_ast));
         md = toMarkdown(ast);
         return md;
     }
