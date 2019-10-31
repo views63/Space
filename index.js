@@ -201,31 +201,34 @@ class CJKSpace {
         }
     }
 
-    walk(ast) {
+    walk(ast) {        
         const type = ast.type;
-        switch (type) {
-            case 'list':
-                this.WalkArray(ast.body);
-                break;
+        if (type === "list") {
+            this.WalkArray(ast.body);
+            return;
+        }
 
-            case 'blockquote':
-                this.WalkArray(ast.quote);
-                break;
+        if (type === "blockquote") {
+            this.WalkArray(ast.quote);
+            return;
+        }
 
-            case 'table':
-                ast.header.forEach(h => WalkTable(h));
-                ast.body.forEach(b => WalkTable(b));
-                break;
-
-            case (type !== "code" && type !== "hr"):
-                this.WalkArray(ast.text);
-                break;
+        if (type === "table") {
+            ast.header.forEach(h => WalkTable(h));
+            ast.body.forEach(b => WalkTable(b));
+            return;
         }
 
         const textType = typeof (ast.text);
         if (textType === "string") {
             ast.text = this.ProcessCJKSpace(ast.text);
             return;
+        }
+
+        if (type !== "code" && type !== "hr") {
+            this.WalkArray(ast.text);
+            return;
+
         }
     }
 
