@@ -215,7 +215,7 @@ class CJKSpace {
                 ast.body.forEach(b => WalkTable(b));
                 break;
 
-            case (type !== "code" && type !== "hr"):
+            case (type !== "code" && type !== "hr" && type !== 'codespan'):
                 this.WalkArray(ast.text);
                 break;
         }
