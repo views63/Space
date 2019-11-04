@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "markdown-it-ast": "0.0.1",
+    "markdown-it-sub": "^1.0.0",
     "marked-ast": "^0.3.0",
     "marked-ast-markdown": "^2.0.1"
   }

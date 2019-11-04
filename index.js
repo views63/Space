@@ -6,17 +6,20 @@ const CharCatalog = {
     CJK: 0,
     Space: 1,
     CJK_SYMBOLS: 2,
-    Others: 3
+    Letter_Digital_Dollar: 3,
+    Others: 4
 }
 
 /** chinese special character */
 const CJK = "\u2e80-\u2eff\u2f00-\u2fdf\u3040-\u309f\u30a0-\u30fa\u30fc-\u30ff\u3100-\u312f\u3200-\u32ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff";
 
+const LETTER_DIGITAL = /[a-z\d\$]/i;
+
 /** chinese symbols */
 const SYMBOLS = /[，。、？“”‘’：；【】（）￥！~·]/;
 
 /** matching the spaces in HTML tags */
-const HTML_STRING = /<\S.+?>/
+const HTML_STRING = /<\S.+?>/;
 
 class CJKSpace {
     constructor() {
@@ -38,6 +41,10 @@ class CJKSpace {
 
         if (str.match(new RegExp(`[${CJK}]`)) !== null) {
             return CharCatalog.CJK;
+        }
+
+        if (str.match(LETTER_DIGITAL) !== null) {
+            return CharCatalog.Letter_Digital_Dollar;
         }
 
         return CharCatalog.Others;
@@ -66,13 +73,13 @@ class CJKSpace {
                 continue;
             }
 
-            if (currCatalog === CharCatalog.Others && nextCatalog === CharCatalog.CJK) {
+            if (currCatalog === CharCatalog.Letter_Digital_Dollar && nextCatalog === CharCatalog.CJK) {
                 newText += curr + " ";
                 currCatalog = nextCatalog;
                 continue;
             }
 
-            if (currCatalog === CharCatalog.CJK && nextCatalog === CharCatalog.Others) {
+            if (currCatalog === CharCatalog.CJK && nextCatalog === CharCatalog.Letter_Digital_Dollar) {
                 newText += curr + " ";
                 currCatalog = nextCatalog;
                 continue;
@@ -102,12 +109,12 @@ class CJKSpace {
             return newText;
         }
 
-        if (currCatalog === CharCatalog.Others && tailCatalog === CharCatalog.CJK) {
+        if (currCatalog === CharCatalog.Letter_Digital_Dollar && tailCatalog === CharCatalog.CJK) {
             newText += " " + tail;
             return newText;
         }
 
-        if (currCatalog === CharCatalog.CJK && tailCatalog === CharCatalog.Others) {
+        if (currCatalog === CharCatalog.CJK && tailCatalog === CharCatalog.Letter_Digital_Dollar) {
             newText += " " + tail;
             return newText;
         }
@@ -148,11 +155,11 @@ class CJKSpace {
             const currHead = curr[0];
             const currCatalog = this.GetCharCatalog(currHead);
             const preCatalog = this.GetCharCatalog(preTail);
-            if (preCatalog === CharCatalog.Others && currCatalog === CharCatalog.CJK) {
+            if ((preCatalog === CharCatalog.Letter_Digital_Dollar || preCatalog === CharCatalog.Others) && currCatalog === CharCatalog.CJK) {
                 ast[index - 1] = preElement + " ";
             }
 
-            if (preCatalog === CharCatalog.CJK && currCatalog === CharCatalog.Others) {
+            if (preCatalog === CharCatalog.CJK && (currCatalog === CharCatalog.Letter_Digital_Dollar || currCatalog === CharCatalog.Others)) {
                 ast[index - 1] = preElement + " ";
             }
         }
@@ -166,11 +173,11 @@ class CJKSpace {
             const currHead = curr[0];
             const currCatalog = this.GetCharCatalog(currHead);
             const preCatalog = this.GetCharCatalog(preTail);
-            if (preCatalog === CharCatalog.Others && currCatalog === CharCatalog.CJK) {
+            if ((preCatalog === CharCatalog.Letter_Digital_Dollar || preCatalog === CharCatalog.Others) && currCatalog === CharCatalog.CJK) {
                 ast[index] = " " + curr;
             }
 
-            if (preCatalog === CharCatalog.CJK && currCatalog === CharCatalog.Others) {
+            if (preCatalog === CharCatalog.CJK && (currCatalog === CharCatalog.Letter_Digital_Dollar ||  currCatalog === CharCatalog.Others)) {
                 ast[index] = " " + curr;
             }
         }
@@ -214,8 +221,8 @@ class CJKSpace {
         }
 
         if (type === "table") {
-            ast.header.forEach(h => WalkTable(h));
-            ast.body.forEach(b => WalkTable(b));
+            ast.header.forEach(h => this.WalkTable(h));
+            ast.body.forEach(b => this.WalkTable(b));
             return;
         }
 
